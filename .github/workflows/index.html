@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Operational Missions</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #070B14;
+            --bg-marine: #0a1a2e;
+            --bg-fleet: #141414;
+            --bg-bait: #0a1f1a;
+            --accent-cyan: #2EE9F6;
+            --accent-green: #22C55E;
+            --accent-amber: #F59E0B;
+            --text-primary: #F4F7FF;
+            --text-secondary: #A9B3C8;
+            --glass-bg: rgba(15, 23, 42, 0.7);
+            --glass-border: rgba(46, 233, 246, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: auto;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Blueprint Grid Background */
+        .blueprint-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.06;
+            background-image: 
+                linear-gradient(rgba(46, 233, 246, 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(46, 233, 246, 0.4) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        /* Noise Overlay */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green), var(--accent-amber));
+            z-index: 1000;
+            transform-origin: left;
+            transform: scaleX(0);
+        }
+
+        /* Masthead */
+        .masthead {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .masthead-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+            margin-bottom: 24px;
+            padding: 8px 16px;
+            border: 1px solid rgba(46, 233, 246, 0.3);
+            border-radius: 4px;
+            background: rgba(46, 233, 246, 0.05);
+        }
+
+        .masthead-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(40px, 8vw, 100px);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .masthead-title span {
+            display: block;
+        }
+
+        .masthead-title .line1 {
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .masthead-title .line2 {
+            color: var(--text-secondary);
+            font-size: 0.5em;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            margin-top: 16px;
+        }
+
+        .masthead-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(14px, 2vw, 18px);
+            font-weight: 300;
+            color: var(--text-secondary);
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.7;
+            margin-bottom: 48px;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .scroll-text {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 50px;
+            background: linear-gradient(to bottom, var(--accent-cyan), transparent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* Mission Section */
+        .mission-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .mission-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .mission-bg.marine {
+            background: linear-gradient(180deg, var(--bg-marine) 0%, var(--bg-primary) 100%);
+        }
+
+        .mission-bg.fleet {
+            background: linear-gradient(180deg, var(--bg-fleet) 0%, #1a1a1a 50%, var(--bg-primary) 100%);
+        }
+
+        .mission-bg.bait {
+            background: linear-gradient(180deg, var(--bg-bait) 0%, var(--bg-primary) 100%);
+        }
+
+        .mission-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1400px;
+            padding: 0 48px;
+        }
+
+        .mission-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .mission-grid.reverse {
+            direction: rtl;
+        }
+
+        .mission-grid.reverse > * {
+            direction: ltr;
+        }
+
+        /* Glass Panel */
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            backdrop-filter: blur(24px) saturate(130%);
+            -webkit-backdrop-filter: blur(24px) saturate(130%);
+            box-shadow: 
+                0 0 0 1px rgba(46, 233, 246, 0.08),
+                0 0 80px rgba(46, 233, 246, 0.12),
+                0 40px 80px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            opacity: 0.5;
+        }
+
+        .mission-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+            margin-bottom: 16px;
+            opacity: 0.8;
+        }
+
+        .mission-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(28px, 3.5vw, 42px);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .mission-client {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(46, 233, 246, 0.15);
+        }
+
+        .mission-highlights {
+            list-style: none;
+        }
+
+        .highlight-item {
+            position: relative;
+            padding: 14px 0 14px 28px;
+            border-bottom: 1px solid rgba(46, 233, 246, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .highlight-item:last-child {
+            border-bottom: none;
+        }
+
+        .highlight-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            background: var(--accent-cyan);
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+
+        .highlight-item:hover {
+            padding-left: 36px;
+        }
+
+        .highlight-item:hover::before {
+            opacity: 1;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        .highlight-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: 400;
+        }
+
+        /* Visual Container */
+        .visual-container {
+            position: relative;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Dashboard Visuals */
+        .dashboard-mockup {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            background: rgba(10, 15, 25, 0.9);
+            border: 1px solid rgba(46, 233, 246, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(46, 233, 246, 0.08);
+            border-bottom: 1px solid rgba(46, 233, 246, 0.1);
+        }
+
+        .dashboard-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dashboard-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dashboard-dot.red { background: #ff5f57; }
+        .dashboard-dot.yellow { background: #febc2e; }
+        .dashboard-dot.green { background: #28c840; }
+
+        .dashboard-title {
+            margin-left: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .dashboard-content {
+            padding: 20px;
+        }
+
+        .metric-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            flex: 1;
+            background: rgba(46, 233, 246, 0.05);
+            border: 1px solid rgba(46, 233, 246, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .metric-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+
+        .chart-container {
+            height: 120px;
+            background: rgba(46, 233, 246, 0.03);
+            border: 1px solid rgba(46, 233, 246, 0.1);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+        }
+
+        .chart-line svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Fleet Map Visual */
+        .fleet-map {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            height: 400px;
+            background: #0d0d0d;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .map-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .route-line {
+            position: absolute;
+            stroke: var(--accent-green);
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 5, 5;
+            animation: dash 2s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+
+        .vehicle-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--accent-green);
+            animation: vehiclePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes vehiclePulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        /* Inventory Visual */
+        .inventory-visual {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .fifo-timeline {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .fifo-item {
+            flex: 1;
+            height: 80px;
+            background: linear-gradient(180deg, rgba(34, 197, 94, 0.3), rgba(34, 197, 94, 0.1));
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+        }
+
+        .fifo-item.warning {
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.3), rgba(245, 158, 11, 0.1));
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+
+        .fifo-item.critical {
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.1));
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .fifo-date {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .fifo-status {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 4px;
+        }
+
+        .gauge-container {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+        }
+
+        .gauge {
+            width: 100px;
+            height: 100px;
+            position: relative;
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: rgba(46, 233, 246, 0.1);
+            stroke-width: 8;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke: var(--accent-cyan);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 251;
+            stroke-dashoffset: 251;
+            transform: rotate(-90deg);
+            transform-origin: center;
+            transition: stroke-dashoffset 1.5s ease;
+        }
+
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+
+        .gauge-label {
+            text-align: center;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Impact Panel */
+        .impact-panel {
+            position: relative;
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .impact-container {
+            text-align: center;
+        }
+
+        .impact-metric {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(48px, 10vw, 120px);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+
+        .impact-metric span {
+            color: var(--accent-cyan);
+        }
+
+        .impact-label {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(16px, 2vw, 24px);
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .impact-arrow {
+            margin: 40px 0;
+            font-size: 32px;
+            color: var(--accent-cyan);
+            opacity: 0.5;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+
+        /* Footer */
+        .footer {
+            position: relative;
+            padding: 80px 0;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .footer-line {
+            width: 80px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            margin: 0 auto 32px;
+        }
+
+        .footer-tagline {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(20px, 3vw, 32px);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .footer-subtext {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(46, 233, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        /* Mobile */
+        @media (max-width: 968px) {
+            .mission-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .mission-grid.reverse {
+                direction: ltr;
+            }
+
+            .visual-container {
+                height: 350px;
+                order: -1;
+            }
+
+            .glass-panel {
+                padding: 32px;
+            }
+
+            .mission-container {
+                padding: 0 24px;
+            }
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Blueprint Grid -->
+    <div class="blueprint-grid"></div>
+
+    <!-- Noise Overlay -->
+    <div class="noise-overlay"></div>
+
+    <!-- Masthead -->
+    <section class="masthead" id="masthead">
+        <div class="masthead-badge">Applied Systems Engineering</div>
+        <h1 class="masthead-title">
+            <span class="line1">Three Operational</span>
+            <span class="line1">Missions</span>
+            <span class="line2">Real Client. Real Systems. Real Impact.</span>
+        </h1>
+        <p class="masthead-subtitle">12-week live consulting engagements with enterprise clients. Field-tested operational systems delivered under real-world constraints.</p>
+        <div class="scroll-indicator">
+            <span class="scroll-text">Initiate Sequence</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <!-- Mission 1: Marine Inventory Control -->
+    <section class="mission-section" id="mission1">
+        <div class="mission-bg marine"></div>
+        <div class="mission-container">
+            <div class="mission-grid">
+                <div class="glass-panel mission-panel">
+                    <div class="mission-label">Mission 01 / Marine Systems</div>
+                    <h2 class="mission-title">Inventory Systems Modernization</h2>
+                    <div class="mission-client">Client: Nautique Boat Company — Orlando, FL</div>
+                    <ul class="mission-highlights">
+                        <li class="highlight-item">
+                            <div class="highlight-text">Real-time inventory control templates with automated tracking</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Asset tracking automation reducing manual entry by 75%</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Executive dashboards with live KPI visualization</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Cloud-based collaboration enabling multi-user editing</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Automated reporting reducing administrative overhead</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <div class="dashboard-mockup">
+                        <div class="dashboard-header">
+                            <div class="dashboard-dots">
+                                <div class="dashboard-dot red"></div>
+                                <div class="dashboard-dot yellow"></div>
+                                <div class="dashboard-dot green"></div>
+                            </div>
+                            <span class="dashboard-title">Inventory Control Dashboard</span>
+                        </div>
+                        <div class="dashboard-content">
+                            <div class="metric-row">
+                                <div class="metric-card">
+                                    <div class="metric-label">Total Assets</div>
+                                    <div class="metric-value" id="assetCount">0</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-label">In Stock</div>
+                                    <div class="metric-value" id="stockCount">0</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <svg class="chart-line" viewBox="0 0 400 100" preserveAspectRatio="none">
+                                    <path id="chartPath1" d="M0,80 Q50,60 100,70 T200,50 T300,30 T400,20" 
+                                          fill="none" stroke="#2EE9F6" stroke-width="2" 
+                                          stroke-dasharray="500" stroke-dashoffset="500"/>
+                                    <defs>
+                                        <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#2EE9F6;stop-opacity:0.3" />
+                                            <stop offset="100%" style="stop-color:#2EE9F6;stop-opacity:0" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path id="areaPath1" d="M0,80 Q50,60 100,70 T200,50 T300,30 T400,20 L400,100 L0,100 Z" 
+                                          fill="url(#grad1)" opacity="0"/>
+                                </svg>
+                            </div>
+                            <div class="metric-row" style="margin-top: 16px;">
+                                <div class="metric-card">
+                                    <div class="metric-label">Efficiency Gain</div>
+                                    <div class="metric-value" style="color: #22C55E;">+42%</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-label">Time Saved</div>
+                                    <div class="metric-value" style="color: #F59E0B;">18hrs/wk</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Panel 1 -->
+    <section class="impact-panel" id="impact1">
+        <div class="impact-container">
+            <div class="impact-metric"><span id="impact1Value">0</span>%</div>
+            <div class="impact-label">Improvement in Inventory Visibility</div>
+            <div class="impact-arrow">↓</div>
+        </div>
+    </section>
+
+    <!-- Mission 2: Fleet Route Optimization -->
+    <section class="mission-section" id="mission2">
+        <div class="mission-bg fleet"></div>
+        <div class="mission-container">
+            <div class="mission-grid reverse">
+                <div class="glass-panel mission-panel">
+                    <div class="mission-label">Mission 02 / Fleet Intelligence</div>
+                    <h2 class="mission-title">Fleet & Route Intelligence System</h2>
+                    <div class="mission-client">Client: Waste Pro — Daytona Beach, FL</div>
+                    <ul class="mission-highlights">
+                        <li class="highlight-item">
+                            <div class="highlight-text">Comparative evaluation of 6 major fleet management platforms</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Real-time fleet monitoring with GPS tracking integration</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Fuel efficiency modeling reducing consumption by 23%</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Labor cost optimization through route analysis</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Fleet safety analytics with incident tracking</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <div class="fleet-map">
+                        <div class="map-grid"></div>
+                        <svg style="position: absolute; inset: 0;" viewBox="0 0 450 400">
+                            <path class="route-line" d="M50,350 Q150,300 200,200 T350,100" />
+                            <path class="route-line" d="M80,380 Q200,320 280,250 T400,150" style="animation-delay: 0.5s;" />
+                            <path class="route-line" d="M30,320 Q120,280 180,180 T320,80" style="animation-delay: 1s;" />
+                        </svg>
+                        <div class="vehicle-dot" style="left: 20%; top: 75%;"></div>
+                        <div class="vehicle-dot" style="left: 45%; top: 50%; animation-delay: 0.7s;"></div>
+                        <div class="vehicle-dot" style="left: 70%; top: 30%; animation-delay: 1.4s;"></div>
+                        <div class="vehicle-dot" style="left: 85%; top: 20%; animation-delay: 2.1s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Panel 2 -->
+    <section class="impact-panel" id="impact2">
+        <div class="impact-container">
+            <div class="impact-metric"><span id="impact2Value">0</span>%</div>
+            <div class="impact-label">Fuel Cost Reduction</div>
+            <div class="impact-arrow">↓</div>
+        </div>
+    </section>
+
+    <!-- Mission 3: Perishable Inventory -->
+    <section class="mission-section" id="mission3">
+        <div class="mission-bg bait"></div>
+        <div class="mission-container">
+            <div class="mission-grid">
+                <div class="glass-panel mission-panel">
+                    <div class="mission-label">Mission 03 / Lifecycle Management</div>
+                    <h2 class="mission-title">Real-Time Inventory & Lifecycle Management</h2>
+                    <div class="mission-client">Client: Orlando Bait Co — Orlando, FL</div>
+                    <ul class="mission-highlights">
+                        <li class="highlight-item">
+                            <div class="highlight-text">Real-time bait inventory dashboard with live stock levels</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">FIFO implementation system preventing spoilage</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Expiration alert reporting with automated notifications</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Component-level tracking for batch management</div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-text">Maintenance scheduling system for equipment</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <div class="inventory-visual">
+                        <div class="fifo-timeline">
+                            <div class="fifo-item">
+                                <div class="fifo-date">Day 1</div>
+                                <div class="fifo-status">Fresh</div>
+                            </div>
+                            <div class="fifo-item">
+                                <div class="fifo-date">Day 3</div>
+                                <div class="fifo-status">Good</div>
+                            </div>
+                            <div class="fifo-item warning">
+                                <div class="fifo-date">Day 5</div>
+                                <div class="fifo-status">Alert</div>
+                            </div>
+                            <div class="fifo-item critical">
+                                <div class="fifo-date">Day 7</div>
+                                <div class="fifo-status">Expire</div>
+                            </div>
+                        </div>
+                        <div class="gauge-container">
+                            <div class="gauge">
+                                <svg viewBox="0 0 100 100">
+                                    <circle class="gauge-bg" cx="50" cy="50" r="40"/>
+                                    <circle class="gauge-fill" id="gauge1" cx="50" cy="50" r="40"/>
+                                </svg>
+                                <div class="gauge-value" id="gaugeValue1">0%</div>
+                                <div class="gauge-label">Fresh Stock</div>
+                            </div>
+                            <div class="gauge">
+                                <svg viewBox="0 0 100 100">
+                                    <circle class="gauge-bg" cx="50" cy="50" r="40"/>
+                                    <circle class="gauge-fill" id="gauge2" cx="50" cy="50" r="40" style="stroke: #F59E0B;"/>
+                                </svg>
+                                <div class="gauge-value" id="gaugeValue2" style="color: #F59E0B;">0%</div>
+                                <div class="gauge-label">Turnover</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-line"></div>
+        <div class="footer-tagline">I design systems that operate in the real world.</div>
+        <div class="footer-subtext">Applied Systems Engineering — Real Client Exposure</div>
+    </footer>
+
+    <script>
+        // Register GSAP plugins
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Progress Bar
+        gsap.to('#progressBar', {
+            scaleX: 1,
+            ease: 'none',
+            scrollTrigger: {
+                trigger: 'body',
+                start: 'top top',
+                end: 'bottom bottom',
+                scrub: 0.3
+            }
+        });
+
+        // Masthead Animation
+        gsap.from('.masthead-badge', {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            delay: 0.2,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.masthead-title .line1', {
+            opacity: 0,
+            y: 50,
+            duration: 1,
+            delay: 0.4,
+            stagger: 0.1,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.masthead-title .line2', {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            delay: 0.8,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.masthead-subtitle', {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            delay: 1,
+            ease: 'power3.out'
+        });
+
+        gsap.from('.scroll-indicator', {
+            opacity: 0,
+            duration: 0.6,
+            delay: 1.4,
+            ease: 'power2.out'
+        });
+
+        // Masthead scroll fade
+        gsap.to('.masthead-content', {
+            opacity: 0,
+            y: -60,
+            filter: 'blur(8px)',
+            scrollTrigger: {
+                trigger: '.masthead',
+                start: 'top top',
+                end: 'bottom top',
+                scrub: 1
+            }
+        });
+
+        // Mission 1 Animations
+        const mission1Tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: '#mission1',
+                start: 'top 70%',
+                end: 'top 20%',
+                toggleActions: 'play none none reverse'
+            }
+        });
+
+        mission1Tl
+            .from('#mission1 .glass-panel', {
+                x: -80,
+                opacity: 0,
+                scale: 0.95,
+                filter: 'blur(8px)',
+                duration: 1,
+                ease: 'power3.out'
+            })
+            .from('#mission1 .dashboard-mockup', {
+                x: 80,
+                opacity: 0,
+                scale: 0.9,
+                rotateY: -10,
+                duration: 1.2,
+                ease: 'power3.out'
+            }, '-=0.8')
+            .from('#mission1 .highlight-item', {
+                x: -30,
+                opacity: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: 'power2.out'
+            }, '-=0.6');
+
+        // Mission 1 Dashboard Counter Animation
+        ScrollTrigger.create({
+            trigger: '#mission1',
+            start: 'top 50%',
+            onEnter: () => {
+                gsap.to('#assetCount', {
+                    innerHTML: 2847,
+                    duration: 2,
+                    snap: { innerHTML: 1 },
+                    ease: 'power2.out'
+                });
+                gsap.to('#stockCount', {
+                    innerHTML: 1923,
+                    duration: 2,
+                    delay: 0.3,
+                    snap: { innerHTML: 1 },
+                    ease: 'power2.out'
+                });
+                gsap.to('#chartPath1', {
+                    strokeDashoffset: 0,
+                    duration: 2,
+                    ease: 'power2.out'
+                });
+                gsap.to('#areaPath1', {
+                    opacity: 1,
+                    duration: 1,
+                    delay: 1
+                });
+            },
+            once: true
+        });
+
+        // Impact Panel 1
+        ScrollTrigger.create({
+            trigger: '#impact1',
+            start: 'top 60%',
+            onEnter: () => {
+                gsap.to('#impact1Value', {
+                    innerHTML: 40,
+                    duration: 2,
+                    snap: { innerHTML: 1 },
+                    ease: 'power2.out'
+                });
+            },
+            once: true
+        });
+
+        gsap.from('#impact1 .impact-metric', {
+            scale: 0.8,
+            opacity: 0,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+                trigger: '#impact1',
+                start: 'top 70%',
+                toggleActions: 'play none none reverse'
+            }
+        });
+
+        // Mission 2 Animations
+        const mission2Tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: '#mission2',
+                start: 'top 70%',
+                end: 'top 20%',
+                toggleActions: 'play none none reverse'
+            }
+        });
+
+        mission2Tl
+            .from('#mission2 .glass-panel', {
+                x: 80,
+                opacity: 0,
+                scale: 0.95,
+                filter: 'blur(8px)',
+                duration: 1,
+                ease: 'power3.out'
+            })
+            .from('#mission2 .fleet-map', {
+                x: -80,
+                opacity: 0,
+                scale: 0.9,
+                rotateY: 10,
+                duration: 1.2,
+                ease: 'power3.out'
+            }, '-=0.8')
+            .from('#mission2 .highlight-item', {
+                x: 30,
+                opacity: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: 'power2.out'
+            }, '-=0.6');
+
+        // Impact Panel 2
+        ScrollTrigger.create({
+            trigger: '#impact2',
+            start: 'top 60%',
+            onEnter: () => {
+                gsap.to('#impact2Value', {
+                    innerHTML: 23,
+                    duration: 2,
+                    snap: { innerHTML: 1 },
+                    ease: 'power2.out'
+                });
+            },
+            once: true
+        });
+
+        gsap.from('#impact2 .impact-metric', {
+            scale: 0.8,
+            opacity: 0,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+                trigger: '#impact2',
+                start: 'top 70%',
+                toggleActions: 'play none none reverse'
+            }
+        });
+
+        // Mission 3 Animations
+        const mission3Tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: '#mission3',
+                start: 'top 70%',
+                end: 'top 20%',
+                toggleActions: 'play none none reverse'
+            }
+        });
+
+        mission3Tl
+            .from('#mission3 .glass-panel', {
+                x: -80,
+                opacity: 0,
+                scale: 0.95,
+                filter: 'blur(8px)',
+                duration: 1,
+                ease: 'power3.out'
+            })
+            .from('#mission3 .inventory-visual', {
+                x: 80,
+                opacity: 0,
+                scale: 0.9,
+                rotateY: -10,
+                duration: 1.2,
+                ease: 'power3.out'
+            }, '-=0.8')
+            .from('#mission3 .highlight-item', {
+                x: -30,
+                opacity: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                ease: 'power2.out'
+            }, '-=0.6');
+
+        // Mission 3 Gauge Animation
+        ScrollTrigger.create({
+            trigger: '#mission3',
+            start: 'top 50%',
+            onEnter: () => {
+                gsap.to('#gauge1', {
+                    strokeDashoffset: 60,
+                    duration: 2,
+                    ease: 'power2.out'
+                });
+                gsap.to('#gaugeValue1', {
+                    innerHTML: 76,
+                    duration: 2,
+                    snap: { innerHTML: 1 },
+                    ease: 'power2.out'
+                });
+                gsap.to('#gauge2', {
+                    strokeDashoffset: 80,
+                    duration: 2,
+                    delay: 0.3,
+                    ease: 'power2.out'
+                });
+                gsap.to('#gaugeValue2', {
+                    innerHTML: 68,
+                    duration: 2,
+                    delay: 0.3,
+                    snap: { innerHTML: 1 },
+                    ease: 'power2.out'
+                });
+            },
+            once: true
+        });
+
+        // Background color transitions
+        gsap.to('body', {
+            backgroundColor: '#0a1a2e',
+            scrollTrigger: {
+                trigger: '#mission1',
+                start: 'top 80%',
+                end: 'top 20%',
+                scrub: 1
+            }
+        });
+
+        gsap.to('body', {
+            backgroundColor: '#141414',
+            scrollTrigger: {
+                trigger: '#mission2',
+                start: 'top 80%',
+                end: 'top 20%',
+                scrub: 1
+            }
+        });
+
+        gsap.to('body', {
+            backgroundColor: '#0a1f1a',
+            scrollTrigger: {
+                trigger: '#mission3',
+                start: 'top 80%',
+                end: 'top 20%',
+                scrub: 1
+            }
+        });
+
+        // Footer animation
+        gsap.from('.footer', {
+            opacity: 0,
+            y: 40,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+                trigger: '.footer',
+                start: 'top 80%',
+                toggleActions: 'play none none reverse'
+            }
+        });
+    </script>
+</body>
+</html>
